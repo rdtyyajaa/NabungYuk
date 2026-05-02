@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TabungSuper Pro - Suara & Animasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #FF6B6B;
+            --success: #4ECDC4;
+            --warning: #FF9F43;
+            --bg: #F0F4F8;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 20px;
+        }
+
+        header { text-align: center; margin-bottom: 30px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        h1 { color: #2D3436; font-size: 32px; font-weight: 800; margin: 0; }
+
+        .container { max-width: 500px; margin: 0 auto; }
+
+        .card {
+            background: white; border-radius: 24px; padding: 20px;
+            margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border: 3px solid #FFF; transition: 0.3s;
+            position: relative; overflow: hidden;
+        }
+
+        .card:hover { border-color: var(--primary); }
+
+        .price-tag { color: var(--secondary); font-weight: 800; font-size: 16px; margin-bottom: 15px; display: block; }
+
+        .progress-container {
+            background: #E9ECEF; height: 30px; border-radius: 50px;
+            margin: 15px 0; position: relative; overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, #4ECDC4, #45B7AF);
+            width: 0%; transition: width 1s ease;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        
+        .action-buttons { display: flex; gap: 10px; }
+
+        input[type="number"] {
+            padding: 12px; border-radius: 12px; border: 2px solid #EEE;
+            outline: none; font-size: 16px; text-align: center;
+        }
+
+        .btn { border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; flex: 1; color: white; }
+        .btn-add { background: var(--success); }
+        .btn-reduce { background: var(--warning); }
+        .btn:active { transform: scale(0.95); }
+
+        .fab {
+            position: fixed; bottom: 30px; right: 30px;
+            background: var(--secondary); color: white;
+            width: 70px; height: 70px; border-radius: 50%;
+            border: 5px solid white; font-size: 35px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255,107,107,0.4); z-index: 99;
+        }
+
+        .modal {
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+
+        .modal-content {
+            background: white; padding: 30px; border-radius: 30px;
+            width: 85%; max-width: 400px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🚀 TabungSuper Pro</h1>
+    <p>Nabung asik dengan suara dan hadiah!</p>
+</header>
+
+<div class="container" id="targetList"></div>
+
+<button class="fab" onclick="showModal()">+</button>
+
+<div class="modal" id="modalTarget">
+    <div class="modal-content">
+        <h2>Target Baru ✨</h2>
+        <input type="text" id="namaBarang" placeholder="Mau beli apa?" style="width:100%; margin-bottom:10px; padding:12px; border-radius:12px; border:2px solid #eee;">
+        <input type="number" id="hargaBarang" placeholder="Harganya berapa? (Rp)" style="width:100%; margin-bottom:10px; padding:12px; border-radius:12px; border:2px solid #eee;">
+        <button onclick="saveTarget()" style="width:100%; background:var(--secondary); color:white; padding:15px; border:none; border-radius:15px; font-weight:800; cursor:pointer;">Mulai!</button>
+        <p onclick="closeModal()" style="cursor:pointer; color:#999; margin-top:15px">Batal</p>
+    </div>
+</div>
+
+<script>
+    let myData = JSON.parse(localStorage.getItem('tabungSuperPro')) || [];
+
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = text;
+        msg.lang = 'id-ID'; // Suara Bahasa Indonesia
+        window.speechSynthesis.speak(msg);
+    }
+
+    function showModal() { document.getElementById('modalTarget').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modalTarget').style.display = 'none'; }
+
+    function saveTarget() {
+        const nama = document.getElementById('namaBarang').value;
+        const harga = parseFloat(document.getElementById('hargaBarang').value);
+        if(nama && harga > 0) {
+            myData.push({ id: Date.now(), nama, harga, terkumpul: 0 });
+            saveAndRender();
+            closeModal();
+            speak("Hore! Target baru ditambahkan. Semangat menabung ya!");
+        }
+    }
+
+    function updateMoney(id, type) {
+        const input = document.getElementById(`input-${id}`);
+        const nominal = parseFloat(input.value);
+        const idx = myData.findIndex(i => i.id === id);
+
+        if(nominal > 0) {
+            if(type === 'add') {
+                myData[idx].terkumpul += nominal;
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                speak("Selamat! Kamu sudah menabung " + nominal + " rupiah.");
+            } else {
+                if(myData[idx].terkumpul >= nominal) {
+                    myData[idx].terkumpul -= nominal;
+                    speak("Tabungan diambil " + nominal + " rupiah. Jangan lupa menabung lagi ya!");
+                } else {
+                    speak("Maaf, uang tabunganmu tidak cukup untuk diambil.");
+                    alert("Tabungan tidak cukup!");
+                }
+            }
+            input.value = '';
+            saveAndRender();
+            
+            if(myData[idx].terkumpul >= myData[idx].harga && type === 'add') {
+                setTimeout(() => speak("Luar biasa! Target " + myData[idx].nama + " sudah tercapai!"), 1000);
+            }
+        }
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('tabungSuperPro', JSON.stringify(myData));
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('targetList');
+        list.innerHTML = '';
+        if(myData.length === 0) {
+            list.innerHTML = '<p style="text-align:center; color:#999">Klik tombol + untuk buat target!</p>';
+            return;
+        }
+
+        myData.forEach(item => {
+            const persen = Math.min((item.terkumpul / item.harga) * 100, 100).toFixed(0);
+            list.innerHTML += `
+                <div class="card">
+                    <button onclick="deleteItem(${item.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; color:#eee; cursor:pointer">X</button>
+                    <h2>${item.nama}</h2>
+                    <span class="price-tag">Target: Rp ${item.harga.toLocaleString()}</span>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${persen}%">${persen}%</div>
+                    </div>
+                    <p style="font-size:14px">Terkumpul: <b>Rp ${item.terkumpul.toLocaleString()}</b></p>
+                    <div class="input-group">
+                        <input type="number" id="input-${item.id}" placeholder="Masukkan jumlah...">
+                        <div class="action-buttons">
+                            <button class="btn btn-add" onclick="updateMoney(${item.id}, 'add')">TAMBAH</button>
+                            <button class="btn btn-reduce" onclick="updateMoney(${item.id}, 'reduce')">KURANGI</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function deleteItem(id) {
+        if(confirm('Hapus target ini?')) {
+            myData = myData.filter(i => i.id !== id);
+            saveAndRender();
+        }
+    }
+
+    render();
+</script>
+
+</body>
+</html>
