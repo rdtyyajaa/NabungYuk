@@ -3,205 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TabungSuper Pro - Suara & Animasi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+    <title>NabungYuk - Sahabat Menabungmu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
-            --primary: #FFD700;
-            --secondary: #FF6B6B;
-            --success: #4ECDC4;
-            --warning: #FF9F43;
-            --bg: #F0F4F8;
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --success: #00B894;
+            --warning: #FAB1A0;
+            --danger: #FF7675;
+            --bg: #F9FAFC;
         }
 
         body {
             background: var(--bg);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0; padding: 20px;
+            margin: 0; padding: 0;
+            color: #2D3436;
+            min-height: 100vh;
         }
 
-        header { text-align: center; margin-bottom: 30px; animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        /* Layar Awal (Input Nama) */
+        #welcomeScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9999; color: white; text-align: center;
+        }
 
-        h1 { color: #2D3436; font-size: 32px; font-weight: 800; margin: 0; }
+        /* Header Area */
+        header {
+            background: white; padding: 30px 20px;
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
 
-        .container { max-width: 500px; margin: 0 auto; }
+        h1 { margin: 0; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+        #userGreeting { font-weight: 600; color: #636E72; margin-top: 5px; }
 
+        .container { max-width: 480px; margin: 20px auto; padding: 0 20px; }
+
+        /* Kartu Tabungan */
         .card {
-            background: white; border-radius: 24px; padding: 20px;
-            margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border: 3px solid #FFF; transition: 0.3s;
-            position: relative; overflow: hidden;
+            background: white; border-radius: 25px; padding: 20px;
+            margin-bottom: 20px; border: 1px solid #F1F2F6;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            animation: slideUp 0.5s ease;
         }
 
-        .card:hover { border-color: var(--primary); }
-
-        .price-tag { color: var(--secondary); font-weight: 800; font-size: 16px; margin-bottom: 15px; display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .progress-container {
-            background: #E9ECEF; height: 30px; border-radius: 50px;
+            background: #F1F2F6; height: 35px; border-radius: 100px;
             margin: 15px 0; position: relative; overflow: hidden;
         }
 
         .progress-bar {
-            height: 100%; background: linear-gradient(90deg, #4ECDC4, #45B7AF);
-            width: 0%; transition: width 1s ease;
+            height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%; transition: width 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            color: white; font-size: 14px; font-weight: 800;
         }
 
-        .input-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         
-        .action-buttons { display: flex; gap: 10px; }
-
-        input[type="number"] {
-            padding: 12px; border-radius: 12px; border: 2px solid #EEE;
-            outline: none; font-size: 16px; text-align: center;
+        input {
+            padding: 14px; border-radius: 15px; border: 2px solid #EDF2F7;
+            font-size: 16px; outline: none; transition: 0.3s;
         }
 
-        .btn { border: none; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s; flex: 1; color: white; }
-        .btn-add { background: var(--success); }
-        .btn-reduce { background: var(--warning); }
-        .btn:active { transform: scale(0.95); }
+        input:focus { border-color: var(--primary); }
+
+        .btn-box { display: flex; gap: 10px; }
+        .btn {
+            border: none; padding: 14px; border-radius: 15px;
+            font-weight: 800; cursor: pointer; flex: 1; transition: 0.2s;
+        }
+
+        .btn-save { background: var(--primary); color: white; }
+        .btn-add { background: var(--success); color: white; }
+        .btn-sub { background: var(--warning); color: #D63031; }
 
         .fab {
             position: fixed; bottom: 30px; right: 30px;
-            background: var(--secondary); color: white;
-            width: 70px; height: 70px; border-radius: 50%;
-            border: 5px solid white; font-size: 35px; cursor: pointer;
-            box-shadow: 0 10px 20px rgba(255,107,107,0.4); z-index: 99;
+            width: 65px; height: 65px; border-radius: 20px;
+            background: var(--primary); color: white; font-size: 30px;
+            border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
         }
 
         .modal {
             display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
             z-index: 1000; justify-content: center; align-items: center;
         }
 
         .modal-content {
-            background: white; padding: 30px; border-radius: 30px;
-            width: 85%; max-width: 400px; text-align: center;
+            background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 400px;
         }
     </style>
 </head>
 <body>
 
+<div id="welcomeScreen">
+    <h1>👋 Halo!</h1>
+    <p>Boleh tahu siapa namamu?</p>
+    <input type="text" id="userNameInput" placeholder="Ketik namamu..." style="width: 250px; text-align: center;">
+    <button class="btn btn-save" onclick="setupUser()" style="margin-top: 15px; flex: none; width: 250px;">Mulai Nabung!</button>
+</div>
+
 <header>
-    <h1>🚀 TabungSuper Pro</h1>
-    <p>Nabung asik dengan suara dan hadiah!</p>
+    <h1>NabungYuk 🚀</h1>
+    <div id="userGreeting">Halo, Sobat!</div>
 </header>
 
-<div class="container" id="targetList"></div>
+<div class="container" id="mainList"></div>
 
 <button class="fab" onclick="showModal()">+</button>
 
-<div class="modal" id="modalTarget">
+<div class="modal" id="targetModal">
     <div class="modal-content">
-        <h2>Target Baru ✨</h2>
-        <input type="text" id="namaBarang" placeholder="Mau beli apa?" style="width:100%; margin-bottom:10px; padding:12px; border-radius:12px; border:2px solid #eee;">
-        <input type="number" id="hargaBarang" placeholder="Harganya berapa? (Rp)" style="width:100%; margin-bottom:10px; padding:12px; border-radius:12px; border:2px solid #eee;">
-        <button onclick="saveTarget()" style="width:100%; background:var(--secondary); color:white; padding:15px; border:none; border-radius:15px; font-weight:800; cursor:pointer;">Mulai!</button>
-        <p onclick="closeModal()" style="cursor:pointer; color:#999; margin-top:15px">Batal</p>
+        <h2 style="margin-top:0">Target Baru ✨</h2>
+        <div class="input-group">
+            <input type="text" id="targetName" placeholder="Mau beli apa?">
+            <input type="number" id="targetPrice" placeholder="Harganya berapa?">
+            <button class="btn btn-save" onclick="addNewTarget()">Tambahkan</button>
+            <button onclick="closeModal()" style="background:none; border:none; color:gray; cursor:pointer">Tutup</button>
+        </div>
     </div>
 </div>
 
 <script>
-    let myData = JSON.parse(localStorage.getItem('tabungSuperPro')) || [];
+    let userData = JSON.parse(localStorage.getItem('nabungYuk_User')) || null;
+    let targets = JSON.parse(localStorage.getItem('nabungYuk_Targets')) || [];
+
+    window.onload = () => {
+        if(!userData) {
+            document.getElementById('welcomeScreen').style.display = 'flex';
+        } else {
+            greetUser();
+            render();
+        }
+    };
+
+    function setupUser() {
+        const name = document.getElementById('userNameInput').value;
+        if(name) {
+            userData = { name: name };
+            localStorage.setItem('nabungYuk_User', JSON.stringify(userData));
+            document.getElementById('welcomeScreen').style.display = 'none';
+            greetUser();
+            speak(`Halo ${name}, selamat datang di Nabung Yuk!`);
+            render();
+        }
+    }
+
+    function greetUser() {
+        document.getElementById('userGreeting').innerText = `Hai ${userData.name}, semangat nabungnya ya! ✨`;
+    }
 
     function speak(text) {
         const msg = new SpeechSynthesisUtterance();
         msg.text = text;
-        msg.lang = 'id-ID'; // Suara Bahasa Indonesia
+        msg.lang = 'id-ID';
         window.speechSynthesis.speak(msg);
     }
 
-    function showModal() { document.getElementById('modalTarget').style.display = 'flex'; }
-    function closeModal() { document.getElementById('modalTarget').style.display = 'none'; }
+    function showModal() { document.getElementById('targetModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('targetModal').style.display = 'none'; }
 
-    function saveTarget() {
-        const nama = document.getElementById('namaBarang').value;
-        const harga = parseFloat(document.getElementById('hargaBarang').value);
+    function addNewTarget() {
+        const nama = document.getElementById('targetName').value;
+        const harga = parseFloat(document.getElementById('targetPrice').value);
         if(nama && harga > 0) {
-            myData.push({ id: Date.now(), nama, harga, terkumpul: 0 });
-            saveAndRender();
+            targets.push({ id: Date.now(), nama, harga, saldo: 0 });
+            save();
             closeModal();
-            speak("Hore! Target baru ditambahkan. Semangat menabung ya!");
+            speak(`Target ${nama} berhasil dibuat!`);
+            document.getElementById('targetName').value = '';
+            document.getElementById('targetPrice').value = '';
         }
     }
 
-    function updateMoney(id, type) {
-        const input = document.getElementById(`input-${id}`);
-        const nominal = parseFloat(input.value);
-        const idx = myData.findIndex(i => i.id === id);
+    function updateSaldo(id, type) {
+        const input = document.getElementById(`in-${id}`);
+        const val = parseFloat(input.value);
+        const idx = targets.findIndex(t => t.id === id);
 
-        if(nominal > 0) {
+        if(val > 0) {
             if(type === 'add') {
-                myData[idx].terkumpul += nominal;
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                speak("Selamat! Kamu sudah menabung " + nominal + " rupiah.");
+                targets[idx].saldo += val;
+                confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
+                speak(`Mantap ${userData.name}! ${val} rupiah sudah masuk tabungan.`);
             } else {
-                if(myData[idx].terkumpul >= nominal) {
-                    myData[idx].terkumpul -= nominal;
-                    speak("Tabungan diambil " + nominal + " rupiah. Jangan lupa menabung lagi ya!");
+                if(targets[idx].saldo >= val) {
+                    targets[idx].saldo -= val;
+                    speak(`Oke ${userData.name}, uang diambil ${val} rupiah.`);
                 } else {
-                    speak("Maaf, uang tabunganmu tidak cukup untuk diambil.");
-                    alert("Tabungan tidak cukup!");
+                    speak(`Duh ${userData.name}, uangnya tidak cukup.`);
                 }
             }
             input.value = '';
-            saveAndRender();
+            save();
             
-            if(myData[idx].terkumpul >= myData[idx].harga && type === 'add') {
-                setTimeout(() => speak("Luar biasa! Target " + myData[idx].nama + " sudah tercapai!"), 1000);
+            if(targets[idx].saldo >= targets[idx].harga && type === 'add') {
+                setTimeout(() => speak(`HORE! Selamat ${userData.name}, target ${targets[idx].nama} sudah tercapai! Kamu hebat!`), 1000);
             }
         }
     }
 
-    function saveAndRender() {
-        localStorage.setItem('tabungSuperPro', JSON.stringify(myData));
+    function save() {
+        localStorage.setItem('nabungYuk_Targets', JSON.stringify(targets));
         render();
     }
 
+    function deleteTarget(id) {
+        if(confirm('Hapus target ini?')) {
+            targets = targets.filter(t => t.id !== id);
+            save();
+        }
+    }
+
     function render() {
-        const list = document.getElementById('targetList');
+        const list = document.getElementById('mainList');
         list.innerHTML = '';
-        if(myData.length === 0) {
-            list.innerHTML = '<p style="text-align:center; color:#999">Klik tombol + untuk buat target!</p>';
+        if(targets.length === 0) {
+            list.innerHTML = `<div style="text-align:center; margin-top:50px; color:#A0AEC0;">Hai ${userData.name}, belum ada target nih.<br>Klik + untuk buat target ya!</div>`;
             return;
         }
 
-        myData.forEach(item => {
-            const persen = Math.min((item.terkumpul / item.harga) * 100, 100).toFixed(0);
+        targets.forEach(t => {
+            const persen = Math.min((t.saldo / t.harga) * 100, 100).toFixed(0);
             list.innerHTML += `
                 <div class="card">
-                    <button onclick="deleteItem(${item.id})" style="position:absolute; right:15px; top:15px; border:none; background:none; color:#eee; cursor:pointer">X</button>
-                    <h2>${item.nama}</h2>
-                    <span class="price-tag">Target: Rp ${item.harga.toLocaleString()}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:start">
+                        <h2 style="margin:0; font-size:20px">${t.nama}</h2>
+                        <button onclick="deleteTarget(${t.id})" style="border:none; background:none; color:#CED4DA; cursor:pointer">✕</button>
+                    </div>
+                    <div style="color:var(--primary); font-weight:800; margin:5px 0">Rp ${t.harga.toLocaleString()}</div>
+                    
                     <div class="progress-container">
                         <div class="progress-bar" style="width: ${persen}%">${persen}%</div>
                     </div>
-                    <p style="font-size:14px">Terkumpul: <b>Rp ${item.terkumpul.toLocaleString()}</b></p>
+                    
+                    <div style="font-size:14px; margin-bottom:15px">Terkumpul: <b>Rp ${t.saldo.toLocaleString()}</b></div>
+                    
                     <div class="input-group">
-                        <input type="number" id="input-${item.id}" placeholder="Masukkan jumlah...">
-                        <div class="action-buttons">
-                            <button class="btn btn-add" onclick="updateMoney(${item.id}, 'add')">TAMBAH</button>
-                            <button class="btn btn-reduce" onclick="updateMoney(${item.id}, 'reduce')">KURANGI</button>
+                        <input type="number" id="in-${t.id}" placeholder="Masukkan jumlah...">
+                        <div class="btn-box">
+                            <button class="btn btn-add" onclick="updateSaldo(${t.id}, 'add')">NABUNG</button>
+                            <button class="btn btn-sub" onclick="updateSaldo(${t.id}, 'sub')">AMBIL</button>
                         </div>
                     </div>
                 </div>
             `;
         });
     }
-
-    function deleteItem(id) {
-        if(confirm('Hapus target ini?')) {
-            myData = myData.filter(i => i.id !== id);
-            saveAndRender();
-        }
-    }
-
-    render();
 </script>
 
 </body>
